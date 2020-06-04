@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: test
+
+---
+spring:
+  profiles: test
+
+grpc:
+  port: 26565
