@@ -22,6 +22,7 @@ plugins {
 	idea //IDE 플러그인 넣어줘야 generated 소스들이 인지됨.
 	kotlin("jvm") version "1.3.72"
 	kotlin("plugin.spring") version "1.3.72"
+	id ("org.jetbrains.kotlin.plugin.jpa") version "1.3.72"
 }
 
 group = "com.example"
@@ -40,6 +41,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	//grpc
 	implementation("com.salesforce.servicelibs:reactor-grpc-stub:${Ver.reactorGrpc}")
 	implementation("io.grpc:grpc-protobuf:${Ver.grpc}")
@@ -47,6 +49,7 @@ dependencies {
 	implementation("io.github.lognet:grpc-spring-boot-starter:${Ver.grpcSpringBootStarter}") //Spring Boot starter module for gRPC framework
 
 	runtimeOnly("io.grpc:grpc-netty") //없으면 grpc 포트가 열리지 않음, default 6565
+	runtimeOnly("com.h2database:h2")
 	protobuf(files("$projectDir/proto")) //proto 파일들이 들어있는 디렉토리를 지정
 	//for test
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
