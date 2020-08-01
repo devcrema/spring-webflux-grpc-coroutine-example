@@ -1,1 +1,1 @@
-rootProject.name = "demo"
+rootProject.name = "spring-webflux-grpc-demo"

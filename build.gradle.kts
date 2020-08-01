@@ -7,16 +7,16 @@ import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
 
 object Ver {
-	const val grpcSpringBootStarter = "3.5.4"
+	const val grpcSpringBootStarter = "3.5.6"
 	const val protobuf = "3.12.3" // use compatible version with grpc-spring-boot-starter
-	const val grpc = "1.29.0" // use compatible version with grpc-spring-boot-starter
+	const val grpc = "1.31.0" // use compatible version with grpc-spring-boot-starter
 	const val reactorGrpc = "1.0.1"
 }
 
 plugins {
-	id("org.springframework.boot") version "2.3.0.RELEASE"
+	id("org.springframework.boot") version "2.3.2.RELEASE"
 	id("io.spring.dependency-management") version "1.0.9.RELEASE"
-	id ("com.github.ben-manes.versions") version "0.28.0"
+	id ("com.github.ben-manes.versions") version "0.29.0"
 
 	id("com.google.protobuf") version "0.8.12" //protobuf gradle plugin
 	idea //IDE 플러그인 넣어줘야 generated 소스들이 인지됨.

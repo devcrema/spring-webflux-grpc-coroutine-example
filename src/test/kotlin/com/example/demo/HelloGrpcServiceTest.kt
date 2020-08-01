@@ -3,8 +3,8 @@ package com.example.demo
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,13 +17,13 @@ import reactor.test.StepVerifier
 internal class HelloGrpcServiceTest {
 
     @Value("\${grpc.port}")
-    val port : Int = 0
+    val port: Int = 0
 
     @Autowired
-    lateinit var helloGrpcService : HelloGrpcService
+    lateinit var helloGrpcService: HelloGrpcService
 
     @Test
-    fun getHelloWithGrpcClient(){
+    fun getHelloWithGrpcClient() {
         //given
         val channel = ManagedChannelBuilder.forAddress("0.0.0.0", port)
                 .usePlaintext() //for test, it disable TLS
@@ -45,7 +45,7 @@ internal class HelloGrpcServiceTest {
             }
 
             override fun onError(t: Throwable?) {
-                fail{"on Error: ${t?.message}"}
+                fail { "on Error: ${t?.message}" }
             }
 
             override fun onCompleted() {
@@ -57,7 +57,7 @@ internal class HelloGrpcServiceTest {
     }
 
     @Test
-    fun getHelloWithWebflux(){
+    fun getHelloWithWebflux() {
         //given
         val request = Mono.just(Hello.Name.newBuilder()
                 .setValue("world!!!!")
