@@ -76,13 +76,23 @@ class ReactorTest {
                     Mono.just(2)
                             .map { sleep(2000) }
                             .subscribeOn(Schedulers.newElastic("2")) // with same thread. can not timeout catch.
-                }
+                }.log()
                 /**
                  * must no signal in duration. if some signal received then no timeout exception occur.
-                 * if timeout in same thread, timeout start to catch after sleep 2000. so does not throw any timeout exception.
-                 * because stream is sequentially triggered. Mono.just(2).map{sleep(2000)} -> timeout(1000) -> already received signal -> no timeout
+                 * if timeout in same thread,
+                 * called to register asynchronously subscribe at almost sametime
+                 * then timeout received onNext as Unit.
+                 * anyway, timeout has signal in it, so it doesn't throw..
+                 * 01:09:23.969 [1-2] INFO reactor.Mono.FlatMap.1 - | onSubscribe([Fuseable] FluxMapFuseable.MapFuseableSubscriber)
+                 * 01:09:23.972 [1-2] INFO reactor.Mono.Timeout.2 - onSubscribe(SerializedSubscriber)
+                 * 01:09:23.973 [1-2] INFO reactor.Mono.Timeout.2 - request(unbounded)
+                 * 01:09:23.973 [1-2] INFO reactor.Mono.FlatMap.1 - | request(unbounded)
+                 * 01:09:25.979 [1-2] INFO reactor.Mono.FlatMap.1 - | onNext(kotlin.Unit)
+                 * 01:09:25.979 [1-2] INFO reactor.Mono.Timeout.2 - onNext(kotlin.Unit)
+                 * 01:09:25.984 [1-2] INFO reactor.Mono.FlatMap.1 - | onComplete()
+                 * 01:09:25.984 [1-2] INFO reactor.Mono.Timeout.2 - onComplete()
                  */
-                .timeout(Duration.ofMillis(1000), Mono.error(NullPointerException())) // fallback to custom error
+                .timeout(Duration.ofMillis(1000), Mono.error(NullPointerException())).log() // fallback to custom error
                 .retry(2) // on error signal received then retry.
 //                .timeout(Duration.ofMillis(1000)) // java.util.concurrent.TimeoutException
                 .subscribeOn(Schedulers.newElastic("1"))
