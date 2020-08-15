@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import java.lang.RuntimeException
 import java.lang.Thread.sleep
 import java.time.Duration
 
@@ -24,10 +23,10 @@ class ReactorTest {
                 .map { it.logThis() } // subA
                 .subscribeOn(subA)
                 .flatMap {
-                    Mono.just(2)
+                    Mono.just(2.logThis())
                             .map { it.logThis() } // subB
                             .subscribeOn(subB)
-                            .publishOn(subA)
+                            .publishOn(subA) // if no publishOn, next map subscribeOn subB, not subA
                 }
                 .map{3.logThis()} // subA
                 .subscribeOn(subB) // subA, not subB
