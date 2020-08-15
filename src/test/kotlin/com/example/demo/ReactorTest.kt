@@ -121,6 +121,11 @@ class ReactorTest {
                     logThread() // 1 runnable, 2 waiting, main waiting
                 }.block()
         logThread() // 1 runnable, 2 waiting, main runnable
+
+        Mono.just("thread reuse test") // reuse already exist waiting thread. sub1.
+                .map { logThread() } // 1 runnable, 2 waiting, main waiting
+                .subscribeOn(sub1)
+                .block()
     }
 
     companion object{
