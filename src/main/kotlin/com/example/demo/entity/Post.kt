@@ -18,7 +18,7 @@ class Post(
         @Column(columnDefinition = "TEXT")
         val content: String,
         var popularity: Long, // increase by add comments
-        @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY, mappedBy = "post_id")
+        @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY, mappedBy = "postId")
         val comments: MutableList<Comment>
 ) {
     fun addComment(content: String) =

@@ -42,6 +42,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	//grpc
 	implementation("com.salesforce.servicelibs:reactor-grpc-stub:${Ver.reactorGrpc}")
 	implementation("io.grpc:grpc-protobuf:${Ver.grpc}")

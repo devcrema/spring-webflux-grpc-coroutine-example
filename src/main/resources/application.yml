@@ -1,6 +1,12 @@
 spring:
   profiles:
     active: local
+grpc:
+  port: 6565
+  shutdown-grace: 30 # Number of seconds to wait for preexisting calls to finish before shutting down.
+server:
+  port: 8585
+  shutdown: graceful # should support graceful shutdown, allowing active requests time to complete.
 
 ---
 spring:
@@ -10,6 +16,3 @@ spring:
     url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
     username: testAdmin
     password: testPassword
-
-grpc:
-  port: 6565
