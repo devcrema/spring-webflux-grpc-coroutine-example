@@ -43,6 +43,9 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-batch")
+	testImplementation("org.springframework.batch:spring-batch-test")
+	implementation("org.springframework.boot:spring-boot-starter-logging")
 	//grpc
 	implementation("com.salesforce.servicelibs:reactor-grpc-stub:${Ver.reactorGrpc}")
 	implementation("io.grpc:grpc-protobuf:${Ver.grpc}")
