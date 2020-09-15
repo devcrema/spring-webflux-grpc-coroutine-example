@@ -45,7 +45,7 @@ class InactiveUserJobConfiguration(
             }.let { userRepository.saveAll(it) }
 
     // 스케줄링 job 설정
-    @Scheduled(fixedDelay = 30 * 1000)
+    @Scheduled(fixedDelay = 30 * 1000, initialDelay = 30 * 1000)
     fun runSchedulingJob() =
             JobParametersBuilder().addString("JobID", UUID.randomUUID().toString())
                     .toJobParameters() // job parameter 로 scope bean 에 value 전달 가능
