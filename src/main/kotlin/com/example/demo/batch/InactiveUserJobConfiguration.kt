@@ -4,13 +4,14 @@ import com.example.demo.entity.User
 import com.example.demo.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
-import org.springframework.batch.core.JobParametersBuilder
+import org.springframework.batch.core.JobExecution
+import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
+import org.springframework.batch.core.configuration.annotation.JobScope
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepScope
-import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.data.RepositoryItemReader
@@ -20,48 +21,37 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.dao.DeadlockLoserDataAccessException
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
 import java.time.ZoneOffset.UTC
-import java.util.UUID
-import javax.annotation.PostConstruct
 
 @Configuration
 @EnableBatchProcessing
 @EnableScheduling
 class InactiveUserJobConfiguration(
-        private val userRepository: UserRepository,
-        private val jobLauncher: JobLauncher,
-        private val jobBuilderFactory: JobBuilderFactory,
-        private val stepBuilderFactory: StepBuilderFactory
+        private val userRepository: UserRepository
 ) {
+
     private val log = LoggerFactory.getLogger(javaClass)
-
-    // test data
-    @PostConstruct
-    fun testDataGenerator(): Unit =
-            (1..110).toList().map {
-                User(email = "$it@email.com", enabled = true, lastAccessedAt = LocalDateTime.now(UTC).minusYears(2))
-            }.let { userRepository.saveAll(it) }
-
-    // 스케줄링 job 설정
-    @Scheduled(fixedDelay = 30 * 1000, initialDelay = 30 * 1000)
-    fun runSchedulingJob() =
-            JobParametersBuilder().addString("JobID", UUID.randomUUID().toString())
-                    .toJobParameters() // job parameter 로 scope bean 에 value 전달 가능
-                    .also { println("data job before all: ${userRepository.findAll()}") }
-                    .let { jobLauncher.run(inactiveUserJob(jobBuilderFactory, inactiveJobStep(stepBuilderFactory)), it) } // run batch
-                    .also { log.info("data job after all: ${userRepository.findAll()}") }
 
     // job 설정
     @Bean
     fun inactiveUserJob(jobBuilderFactory: JobBuilderFactory, inactiveJobStep: Step): Job =
             jobBuilderFactory["inactiveUserJob"]
                     .start(inactiveJobStep) // 시작
+                    .listener(object : JobExecutionListener {
+                        override fun beforeJob(jobExecution: JobExecution) {
+                            log.info("before job")
+                        }
+
+                        override fun afterJob(jobExecution: JobExecution) {
+                            log.info("after Job")
+                        }
+                    })
                     .build()
 
     // step 설정
     @Bean
+    @JobScope
     fun inactiveJobStep(stepBuilderFactory: StepBuilderFactory): Step =
             stepBuilderFactory["inactiveUserStep"]
                     .chunk<User, User>(10) // 청크(데이터 단위) 설정, <input, output>
