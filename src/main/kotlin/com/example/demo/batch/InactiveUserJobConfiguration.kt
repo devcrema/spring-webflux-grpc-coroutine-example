@@ -13,22 +13,27 @@ import org.springframework.batch.core.configuration.annotation.JobScope
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ItemProcessor
+import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.data.RepositoryItemReader
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.dao.DeadlockLoserDataAccessException
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.EnableScheduling
 import java.time.LocalDateTime
-import java.time.ZoneOffset.UTC
 
+@Suppress("SpringElInspection")
 @Configuration
 @EnableBatchProcessing
 @EnableScheduling
 class InactiveUserJobConfiguration(
-        private val userRepository: UserRepository
+        private val userRepository: UserRepository,
+        private val inactiveUserItemReader: ItemReader<User>,
+        private val inactiveUserProcessor: ItemProcessor<User, User>,
+        private val inactiveUserWriter: ItemWriter<User>
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -52,12 +57,12 @@ class InactiveUserJobConfiguration(
     // step 설정
     @Bean
     @JobScope
-    fun inactiveJobStep(stepBuilderFactory: StepBuilderFactory): Step =
+    fun inactiveJobStep(stepBuilderFactory: StepBuilderFactory, @Value("#{jobParameters[pageSize]}") pageSize: Int): Step =
             stepBuilderFactory["inactiveUserStep"]
-                    .chunk<User, User>(10) // 청크(데이터 단위) 설정, <input, output>
-                    .reader(inactiveUserItemReader()) // reader, processor, writer 설정
-                    .processor(inactiveUserProcessor())
-                    .writer(inactiveUserWriter())
+                    .chunk<User, User>(pageSize) // 청크(데이터 단위) 설정, <input, output>
+                    .reader(inactiveUserItemReader) // reader, processor, writer 설정
+                    .processor(inactiveUserProcessor)
+                    .writer(inactiveUserWriter)
                     .faultTolerant().retryLimit(2).retry(DeadlockLoserDataAccessException::class.java) // when deadlock then retry
                     .build()
 
@@ -65,19 +70,22 @@ class InactiveUserJobConfiguration(
     // reader 설정
     @Bean
     @StepScope
-    fun inactiveUserItemReader(): RepositoryItemReader<User> =
+    fun inactiveUserItemReader(
+            @Value("#{jobParameters[pageSize]}") pageSize: Int,
+            @Value("#{jobParameters[criteriaTime]}") criteriaTime: String): RepositoryItemReader<User> =
             RepositoryItemReaderBuilder<User>()
                     .repository(userRepository)
                     .methodName("findAllByLastAccessedAtBefore")
-                    .pageSize(10)
+                    .pageSize(pageSize)
                     .maxItemCount(Int.MAX_VALUE)
-                    .arguments(listOf(LocalDateTime.now(UTC).minusYears(1))) // 1년전 활동 유저 비활성화
+                    .arguments(listOf(LocalDateTime.parse(criteriaTime)))
                     .sorts(mapOf("id" to Sort.Direction.ASC))
                     .name("inactiveUserItemReader")
                     .build()
 
     // processor 설정
     @Bean
+    @StepScope
     fun inactiveUserProcessor(): ItemProcessor<User, User> =
             ItemProcessor { user ->
                 user.also { it.enabled = false }
@@ -86,6 +94,7 @@ class InactiveUserJobConfiguration(
 
     // writer 설정
     @Bean
+    @StepScope
     fun inactiveUserWriter(): ItemWriter<User> =
             ItemWriter { users: List<User> ->
                 userRepository.saveAll(users)

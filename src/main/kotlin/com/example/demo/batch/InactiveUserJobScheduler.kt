@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.UUID
+import java.time.ZoneOffset.UTC
 import javax.annotation.PostConstruct
 
 @Component
@@ -29,10 +29,18 @@ class InactiveUserJobScheduler(
             }.let { userRepository.saveAll(it) }
                     .let { log.info("test data generate") }
 
-    // 스케줄링 job 설정
-    @Scheduled(fixedDelay = 15 * 1000, initialDelay = 15 * 1000)
-    fun runSchedulingJob() =
-            JobParametersBuilder().addString("JobID", UUID.randomUUID().toString())
+    fun runInactiveUserJob(pageSize: Int, criteriaTime: LocalDateTime) =
+            JobParametersBuilder()
+                    .addLong("pageSize", 10)
+                    .addString("criteriaTime", criteriaTime.toString())
                     .toJobParameters() // job parameter 로 scope bean 에 value 전달 가능
                     .let { jobParameters -> jobLauncher.run(inactiveUserJob, jobParameters) } // run batch
+
+    // 스케줄링 job 설정
+    @Scheduled(fixedDelay = 10 * 1000, initialDelay = 10 * 1000)
+    fun runSchedulingJob() = runInactiveUserJob(
+            pageSize = 10,
+            criteriaTime = LocalDateTime.now(UTC).minusYears(1) // 1년전 활동 유저 비활성화
+    )
+
 }
