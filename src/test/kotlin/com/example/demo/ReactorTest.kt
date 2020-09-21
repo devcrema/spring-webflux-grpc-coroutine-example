@@ -152,11 +152,22 @@ class ReactorTest {
         sleep(2000)
     }
 
+    @Test
+    fun reactorFromCallableTest(){
+        Mono.fromCallable { testLogging() }.log() // started at subscribeOn thread
+                .subscribeOn(Schedulers.boundedElastic()).log()
+                .subscribe { log.info("end") }
+
+        sleep(1000)
+    }
+
     companion object{
         var thread1: Thread? = null
         var thread2: Thread? = null
         var mainThread: Thread? = null
     }
+
+    private fun testLogging() = "test1".also { log.info(it) }
 
     private fun logThread() = "thread1".also { thread1?.logThis(it) }
             .also { "thread2".also { thread2?.logThis(it) } }

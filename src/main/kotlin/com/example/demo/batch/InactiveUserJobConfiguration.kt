@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.dao.DeadlockLoserDataAccessException
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.EnableScheduling
+import java.lang.Thread.sleep
 import java.time.LocalDateTime
 
 @Suppress("SpringElInspection")
@@ -89,6 +90,7 @@ class InactiveUserJobConfiguration(
     fun inactiveUserProcessor(): ItemProcessor<User, User> =
             ItemProcessor { user ->
                 user.also { it.enabled = false }
+                        .also { sleep(500) } // for test
                         .also { log.info("process data: $it") }
             }
 
