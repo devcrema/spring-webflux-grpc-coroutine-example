@@ -137,6 +137,21 @@ class ReactorTest {
                 .block()
     }
 
+    @Test
+    fun reactorAsyncUnitCallTest(){
+        Mono.just("run 1")
+                .map { sleep(1000)
+                it}
+                .subscribeOn(Schedulers.boundedElastic()).log()
+                .subscribe { log.info(it) }
+//                .dispose() // when dispose this, it cancelled
+        // not dispose this, onNext once and onComplete()
+        // 18:31:49.594 [boundedElastic-1] INFO reactor.Mono.SubscribeOn.1 - onNext(run 1)
+        // 18:31:49.594 [boundedElastic-1] INFO com.example.demo.ReactorTest - run 1
+        // 18:31:49.595 [boundedElastic-1] INFO reactor.Mono.SubscribeOn.1 - onComplete()
+        sleep(2000)
+    }
+
     companion object{
         var thread1: Thread? = null
         var thread2: Thread? = null
