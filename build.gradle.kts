@@ -46,6 +46,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-batch")
 	testImplementation("org.springframework.batch:spring-batch-test")
 	implementation("org.springframework.boot:spring-boot-starter-logging")
+
+	implementation("com.querydsl:querydsl-core")
+	implementation("com.querydsl:querydsl-jpa")
 	//grpc
 	implementation("com.salesforce.servicelibs:reactor-grpc-stub:${Ver.reactorGrpc}")
 	implementation("io.grpc:grpc-protobuf:${Ver.grpc}")
@@ -53,7 +56,7 @@ dependencies {
 	implementation("io.github.lognet:grpc-spring-boot-starter:${Ver.grpcSpringBootStarter}") //Spring Boot starter module for gRPC framework
 
 	runtimeOnly("io.grpc:grpc-netty") //없으면 grpc 포트가 열리지 않음, default 6565
-	runtimeOnly("com.h2database:h2")
+	implementation("com.h2database:h2")
 	protobuf(files("$projectDir/proto")) //proto 파일들이 들어있는 디렉토리를 지정
 	//for test
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {

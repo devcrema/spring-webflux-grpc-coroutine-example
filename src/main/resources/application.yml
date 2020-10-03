@@ -13,7 +13,7 @@ spring:
   profiles: local
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:test_db;DB_CLOSE_DELAY=-1
     username: testAdmin
     password: testPassword
   batch:
