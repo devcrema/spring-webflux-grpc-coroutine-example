@@ -28,17 +28,17 @@ class ReactorTest {
                             .subscribeOn(subB)
                             .publishOn(subA) // if no publishOn, next map subscribeOn subB, not subA
                 }
-                .map{3.logThis()} // subA
+                .map { 3.logThis() } // subA
                 .subscribeOn(subB) // subA, not subB
-                .map{4.logThis()} // subA, not subB
+                .map { 4.logThis() } // subA, not subB
                 .publishOn(pubA) // pubA
-                .map{5.logThis()} // pubA
+                .map { 5.logThis() } // pubA
                 .subscribeOn(subC) // pubA, not subC
-                .map{6.logThis()} // pubA, not subC
+                .map { 6.logThis() } // pubA, not subC
                 .publishOn(pubB) // pubB
-                .map{7.logThis()} // pubB
+                .map { 7.logThis() } // pubB
                 .publishOn(pubC) //pubC
-                .map{8.logThis()} // pubC
+                .map { 8.logThis() } // pubC
                 .block()
     }
 
@@ -69,7 +69,7 @@ class ReactorTest {
     }
 
     @Test
-    fun reactorTimeoutRetryTest(){
+    fun reactorTimeoutRetryTest() {
         Mono.just(1)
                 .flatMap {
                     log.info("wait...")
@@ -138,10 +138,12 @@ class ReactorTest {
     }
 
     @Test
-    fun reactorAsyncUnitCallTest(){
+    fun reactorAsyncUnitCallTest() {
         Mono.just("run 1")
-                .map { sleep(1000)
-                it}
+                .map {
+                    sleep(1000)
+                    it
+                }
                 .subscribeOn(Schedulers.boundedElastic()).log()
                 .subscribe { log.info(it) }
 //                .dispose() // when dispose this, it cancelled
@@ -153,7 +155,7 @@ class ReactorTest {
     }
 
     @Test
-    fun reactorFromCallableTest(){
+    fun reactorFromCallableTest() {
         Mono.fromCallable { testLogging() }.log() // started at subscribeOn thread
                 .subscribeOn(Schedulers.boundedElastic()).log()
                 .subscribe { log.info("end") }
@@ -161,7 +163,35 @@ class ReactorTest {
         sleep(1000)
     }
 
-    companion object{
+    @Test
+    fun reactorContextIsNotGlobalContextTest() {
+        val key = "testKey1"
+        Mono.just("first")
+                .doOnNext { str ->
+                    log.info("doOnNext $str")
+                    Mono.subscriberContext().map { context ->
+                        val loggedData = context.getOrDefault(key, "")
+                        context.put(key, "$loggedData \nlog this: $str") // empty
+                    }.block()
+                }
+                .flatMap { str ->
+                    log.info("flatMap $str")
+                    Mono.just("second")
+                            .doOnNext { second ->
+                                Mono.subscriberContext().map { context ->
+                                    val loggedData = context.getOrDefault(key, "")
+                                    context.put(key, "$loggedData \ni want log this too: $second") // empty
+                                }.block()
+                            }
+                }.doOnNext {
+                    Mono.subscriberContext().map { context ->
+                        log.info("result: ${context.getOrDefault(key, "empty")}") // empty
+                    }.block()
+                }
+                .block()
+    }
+
+    companion object {
         var thread1: Thread? = null
         var thread2: Thread? = null
         var mainThread: Thread? = null
