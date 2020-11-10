@@ -18,4 +18,4 @@ spring:
     password: testPassword
   batch:
     job:
-      enabled: false
+      enabled: false # disable auto batch job start
