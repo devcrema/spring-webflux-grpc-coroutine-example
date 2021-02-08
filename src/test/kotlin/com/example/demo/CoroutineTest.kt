@@ -3,6 +3,7 @@ package com.example.demo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -13,6 +14,69 @@ import java.lang.Thread.sleep
 @Suppress("BlockingMethodInNonBlockingContext")
 class CoroutineTest {
     private val log = LoggerFactory.getLogger(this::class.java)
+
+    /*
+    17:24:43.292 [Test worker] INFO com.example.demo.CoroutineTest - start mono
+    17:24:44.297 [Test worker] INFO com.example.demo.CoroutineTest - monoBuy
+    17:24:45.303 [Test worker] INFO com.example.demo.CoroutineTest - monoRefund
+    17:24:45.303 [Test worker] INFO com.example.demo.CoroutineTest - success 1000 receipt success
+     */
+    @Test
+    fun `reactor sequence test`() {
+        Mono.just(1000)
+            .doOnNext { log.info("start mono") }
+            .subscribeOn(Schedulers.immediate())
+            .flatMap { monoBuy(it) }
+            .flatMap { monoRefund(it) }
+            .subscribe({
+                log.info("success $it")
+            }, {
+                log.info("failed $it")
+            }
+            )
+        sleep(3000)
+    }
+
+    private fun monoBuy(money: Int): Mono<String> = Mono
+        .fromCallable { sleep(1000) }
+        .map { log.info("monoBuy") }
+        .map { "$money receipt" }
+
+    private fun monoRefund(receipt: String): Mono<String> = Mono
+        .fromCallable { sleep(1000) }
+        .map { log.info("monoRefund") }
+        .map { "$receipt success" }
+
+    /*
+    17:23:31.683 [Test worker @coroutine#1] INFO com.example.demo.CoroutineTest - start suspend function
+    17:23:32.696 [Test worker @coroutine#1] INFO com.example.demo.CoroutineTest - suspendBuy
+    17:23:33.702 [Test worker @coroutine#1] INFO com.example.demo.CoroutineTest - suspendRefund
+    17:23:33.702 [Test worker @coroutine#1] INFO com.example.demo.CoroutineTest - success 1000 receipt success
+    */
+    @Test
+    fun `coroutine sequence test`() = runBlocking { buyAndRefund() }
+
+    private suspend fun buyAndRefund() {
+        log.info("start suspend function")
+        val money = 1000
+        try {
+            val receipt = suspendBuy(money)
+            val result = suspendRefund(receipt)
+            log.info("success $result")
+        } catch (e: Exception) {
+            log.info("failed $e")
+        }
+    }
+
+    private suspend fun suspendBuy(money: Int): String =
+        delay(1000)
+            .also { log.info("suspendBuy") }
+            .let { "$money receipt" }
+
+    private suspend fun suspendRefund(receipt: String): String =
+        delay(1000)
+            .also { log.info("suspendRefund") }
+            .let { "$receipt success" }
 
     /*
     result
@@ -34,7 +98,7 @@ class CoroutineTest {
     14:40:05.606 [Test worker] INFO com.example.demo.CoroutineTest - result: [1,2,3]
      */
     @Test
-    fun `reactor concurrency test`(){
+    fun `reactor concurrency test`() {
         val job1 = Mono.just(1)
             .map {
                 log.info("1 sleep")
