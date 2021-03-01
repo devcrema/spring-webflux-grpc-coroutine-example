@@ -1,4 +1,4 @@
-#spring web flux grpc example 
+#spring webflux grpc coroutine example 
 - GRPC + webflux
-- reactor
-- graceful shutdown
+- coroutine integrate with reactor
+

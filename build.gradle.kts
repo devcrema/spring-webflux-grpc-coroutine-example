@@ -6,7 +6,7 @@ import com.google.protobuf.gradle.plugins
 import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
 
-object Ver {
+object Version {
 	const val grpcSpringBootStarter = "3.5.6"
 	const val protobuf = "3.12.3" // use compatible version with grpc-spring-boot-starter
 	const val grpc = "1.31.0" // use compatible version with grpc-spring-boot-starter
@@ -44,17 +44,13 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	implementation("org.springframework.boot:spring-boot-starter-batch")
-	testImplementation("org.springframework.batch:spring-batch-test")
 	implementation("org.springframework.boot:spring-boot-starter-logging")
 
-	implementation("com.querydsl:querydsl-core")
-	implementation("com.querydsl:querydsl-jpa")
 	//grpc
-	implementation("com.salesforce.servicelibs:reactor-grpc-stub:${Ver.reactorGrpc}")
-	implementation("io.grpc:grpc-protobuf:${Ver.grpc}")
-	implementation("io.grpc:grpc-services:${Ver.grpc}")
-	implementation("io.github.lognet:grpc-spring-boot-starter:${Ver.grpcSpringBootStarter}") //Spring Boot starter module for gRPC framework
+	implementation("com.salesforce.servicelibs:reactor-grpc-stub:${Version.reactorGrpc}")
+	implementation("io.grpc:grpc-protobuf:${Version.grpc}")
+	implementation("io.grpc:grpc-services:${Version.grpc}")
+	implementation("io.github.lognet:grpc-spring-boot-starter:${Version.grpcSpringBootStarter}") //Spring Boot starter module for gRPC framework
 
 	runtimeOnly("io.grpc:grpc-netty") //없으면 grpc 포트가 열리지 않음, default 6565
 	implementation("com.h2database:h2")
@@ -80,14 +76,14 @@ tasks.withType<KotlinCompile> {
 
 protobuf {
 	protoc {
-		artifact = "com.google.protobuf:protoc:${Ver.protobuf}"
+		artifact = "com.google.protobuf:protoc:${Version.protobuf}"
 	}
 	plugins {
 		id("grpc") {
-			artifact = "io.grpc:protoc-gen-grpc-java:${Ver.grpc}"
+			artifact = "io.grpc:protoc-gen-grpc-java:${Version.grpc}"
 		}
 		id("reactor") {
-			artifact = "com.salesforce.servicelibs:reactor-grpc:${Ver.reactorGrpc}"
+			artifact = "com.salesforce.servicelibs:reactor-grpc:${Version.reactorGrpc}"
 		}
 	}
 	generateProtoTasks {

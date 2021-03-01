@@ -12,4 +12,4 @@ spring:
     password: testPassword
 
 grpc:
-  port: 26565
+  port: 0
