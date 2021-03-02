@@ -1,10 +1,6 @@
 package com.example.demo
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
@@ -24,28 +20,28 @@ class CoroutineTest {
     @Test
     fun `reactor sequence test`() {
         Mono.just(1000)
-            .doOnNext { log.info("start mono") }
-            .subscribeOn(Schedulers.immediate())
-            .flatMap { monoBuy(it) }
-            .flatMap { monoRefund(it) }
-            .subscribe({
-                log.info("success $it")
-            }, {
-                log.info("failed $it")
-            }
-            )
+                .doOnNext { log.info("start mono") }
+                .subscribeOn(Schedulers.immediate())
+                .flatMap { monoBuy(it) }
+                .flatMap { monoRefund(it) }
+                .subscribe({
+                    log.info("success $it")
+                }, {
+                    log.info("failed $it")
+                }
+                )
         sleep(3000)
     }
 
     private fun monoBuy(money: Int): Mono<String> = Mono
-        .fromCallable { sleep(1000) }
-        .map { log.info("monoBuy") }
-        .map { "$money receipt" }
+            .fromCallable { sleep(1000) }
+            .map { log.info("monoBuy") }
+            .map { "$money receipt" }
 
     private fun monoRefund(receipt: String): Mono<String> = Mono
-        .fromCallable { sleep(1000) }
-        .map { log.info("monoRefund") }
-        .map { "$receipt success" }
+            .fromCallable { sleep(1000) }
+            .map { log.info("monoRefund") }
+            .map { "$receipt success" }
 
     /*
     17:23:31.683 [Test worker @coroutine#1] INFO com.example.demo.CoroutineTest - start suspend function
@@ -69,14 +65,14 @@ class CoroutineTest {
     }
 
     private suspend fun suspendBuy(money: Int): String =
-        delay(1000)
-            .also { log.info("suspendBuy") }
-            .let { "$money receipt" }
+            delay(1000)
+                    .also { log.info("suspendBuy") }
+                    .let { "$money receipt" }
 
     private suspend fun suspendRefund(receipt: String): String =
-        delay(1000)
-            .also { log.info("suspendRefund") }
-            .let { "$receipt success" }
+            delay(1000)
+                    .also { log.info("suspendRefund") }
+                    .let { "$receipt success" }
 
     /*
     result
@@ -100,25 +96,25 @@ class CoroutineTest {
     @Test
     fun `reactor concurrency test`() {
         val job1 = Mono.just(1)
-            .map {
-                log.info("1 sleep")
-                sleep(1500)
-                it
-            }.subscribeOn(Schedulers.parallel())
+                .map {
+                    log.info("1 sleep")
+                    sleep(1500)
+                    it
+                }.subscribeOn(Schedulers.parallel())
 
         val job2 = Mono.just(2)
-            .map {
-                log.info("2 sleep")
-                sleep(1500)
-                it
-            }.subscribeOn(Schedulers.parallel())
+                .map {
+                    log.info("2 sleep")
+                    sleep(1500)
+                    it
+                }.subscribeOn(Schedulers.parallel())
 
         val job3 = Mono.just(3)
-            .map {
-                log.info("3 sleep")
-                sleep(1500)
-                it
-            }.subscribeOn(Schedulers.parallel())
+                .map {
+                    log.info("3 sleep")
+                    sleep(1500)
+                    it
+                }.subscribeOn(Schedulers.parallel())
         val result = Mono.zip(job1, job2, job3).block()
         log.info("result: $result")
     }
@@ -162,5 +158,33 @@ class CoroutineTest {
             3
         }
         log.info("${job1.await()} ${job2.await()} ${job3.await()}")
+    }
+
+    @Test
+    fun `reactor error handling test`() {
+        Mono.just("").map {
+            throw IllegalStateException("reactor mono error!!")
+        }.map {
+            "unreached"
+        }.onErrorResume {
+            Mono.just("$it")
+        }.block().also { println("result: $it") }
+    }
+
+    @Test
+    fun `coroutine error handling test`() {
+        val result = runBlocking {
+            try {
+                throwError()
+            } catch (e: Exception) {
+                "error $e"
+            }
+        }
+        println("result :$result")
+    }
+
+    private suspend fun throwError() {
+        delay(10)
+        throw IllegalStateException()
     }
 }
