@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toFlux
 import java.lang.Thread.sleep
 import java.time.LocalDateTime
+import kotlin.system.measureTimeMillis
 
 @Suppress("BlockingMethodInNonBlockingContext")
 class CoroutineTest {
@@ -206,4 +208,31 @@ class CoroutineTest {
                 }
         }.join()
     }
+
+    @Test
+    fun `coroutine parallel test2`() = runBlocking {
+        CoroutineScope(Dispatchers.Default).launch {
+            measureTimeMillis {
+                (1..5).asFlow()
+                    .concurrentMap(this, 100) {
+                        sleep(1000)
+                        println(Thread.currentThread().name)
+                        it
+                    }
+                    .concurrentMap(this, 100) {
+                        sleep(1000)
+                        println(Thread.currentThread().name)
+                        it
+                    }
+                    .collect {
+                        println("${Thread.currentThread().name} ${LocalDateTime.now()} : $it")
+                    }
+            }.also { println("total time : $it") }
+        }.join()
+    }
+
+    private fun <T, R> Flow<T>.concurrentMap(scope: CoroutineScope, concurrencyLevel: Int, transform: suspend (T) -> R): Flow<R> = this
+        .map { scope.async { transform(it) } }
+        .buffer(concurrencyLevel)
+        .map { it.await() }
 }
