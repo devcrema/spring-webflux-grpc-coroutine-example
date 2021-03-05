@@ -9,6 +9,7 @@ import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toFlux
 import java.lang.Thread.sleep
 import java.time.LocalDateTime
+import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
 @Suppress("BlockingMethodInNonBlockingContext")
@@ -190,6 +191,24 @@ class CoroutineTest {
     private suspend fun throwError() {
         delay(10)
         throw IllegalStateException()
+    }
+
+    @Test
+    fun `coroutine launch scope test`(){
+        val singleDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        runBlocking(singleDispatcher){
+            launch {
+                delay(1000)
+                println("1 non blocking ${Thread.currentThread().name}")
+                println("2 non blocking ${Thread.currentThread().name}")
+            }
+            coroutineScope { // suspend block
+                println("3 blocking ${Thread.currentThread().name}")
+                delay(500)
+                println("4 blocking ${Thread.currentThread().name}")
+            }
+            println("5? ${Thread.currentThread().name}")
+        }
     }
 
     @Test
