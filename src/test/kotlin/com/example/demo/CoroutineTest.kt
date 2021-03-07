@@ -254,4 +254,23 @@ class CoroutineTest {
         .map { scope.async { transform(it) } }
         .buffer(concurrencyLevel)
         .map { it.await() }
+
+    @Test
+    fun `coroutine yield test`() = runBlocking {
+        val single = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        val progress1 = CoroutineScope(single).launch {
+            (1..10).forEach {
+                println("show progress1 ${it * 10}%")
+                yield()
+            }
+        }
+        val progress2 = CoroutineScope(single).launch {
+            (1..10).forEach {
+                println("show progress2 ${it * 10}%")
+                yield()
+            }
+        }
+        progress1.join()
+        progress2.join()
+    }
 }
