@@ -4,9 +4,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletPath
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import reactor.kotlin.core.publisher.toFlux
 import java.lang.Thread.sleep
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
@@ -272,5 +272,19 @@ class CoroutineTest {
         }
         progress1.join()
         progress2.join()
+    }
+
+    @Test
+    fun `coroutine withContext test`() = runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = withContext(Dispatchers.IO){
+                "is this received?"
+            }
+            println(result)
+            CoroutineScope(Dispatchers.IO).launch {
+                println("started?")
+            }
+        }
+        Unit
     }
 }
