@@ -287,4 +287,31 @@ class CoroutineTest {
         }
         Unit
     }
+
+    @Suppress("DeferredResultUnused")
+    @Test
+    fun `coroutine cancel test`() {
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.IO).launch {
+                sleep(1000)
+                println("launch, started")
+            }
+            CoroutineScope(Dispatchers.IO).async {
+                sleep(1000)
+                println("async, started")
+            }
+            withContext(Dispatchers.IO){
+                sleep(1000)
+                println("with context, started")
+            }
+            coroutineScope {
+                sleep(1000)
+                println("coroutineScope, cancelled")
+            }
+        }
+        sleep(500)
+        job.cancel()
+        sleep(1000)
+        println("ends")
+    }
 }
