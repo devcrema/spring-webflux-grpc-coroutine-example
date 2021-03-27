@@ -1,10 +1,22 @@
 package com.example.demo
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletPath
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.lang.Thread.sleep
@@ -194,9 +206,9 @@ class CoroutineTest {
     }
 
     @Test
-    fun `coroutine launch scope test`(){
+    fun `coroutine launch scope test`() {
         val singleDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-        runBlocking(singleDispatcher){
+        runBlocking(singleDispatcher) {
             launch {
                 delay(1000)
                 println("1 non blocking ${Thread.currentThread().name}")
@@ -250,7 +262,11 @@ class CoroutineTest {
         }.join()
     }
 
-    private fun <T, R> Flow<T>.concurrentMap(scope: CoroutineScope, concurrencyLevel: Int, transform: suspend (T) -> R): Flow<R> = this
+    private fun <T, R> Flow<T>.concurrentMap(
+        scope: CoroutineScope,
+        concurrencyLevel: Int,
+        transform: suspend (T) -> R
+    ): Flow<R> = this
         .map { scope.async { transform(it) } }
         .buffer(concurrencyLevel)
         .map { it.await() }
@@ -277,7 +293,7 @@ class CoroutineTest {
     @Test
     fun `coroutine withContext test`() = runBlocking {
         CoroutineScope(Dispatchers.IO).launch {
-            val result = withContext(Dispatchers.IO){
+            val result = withContext(Dispatchers.IO) {
                 "is this received?"
             }
             println(result)
@@ -300,7 +316,7 @@ class CoroutineTest {
                 sleep(1000)
                 println("async, started")
             }
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 sleep(1000)
                 println("with context, started")
             }

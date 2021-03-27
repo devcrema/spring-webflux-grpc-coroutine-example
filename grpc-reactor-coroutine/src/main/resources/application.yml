@@ -1,0 +1,21 @@
+spring:
+  profiles:
+    active: local
+grpc:
+  port: 6565
+  shutdown-grace: 30 # Number of seconds to wait for preexisting calls to finish before shutting down.
+server:
+  port: 8585
+  shutdown: graceful # should support graceful shutdown, allowing active requests time to complete.
+
+---
+spring:
+  profiles: local
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test_db;DB_CLOSE_DELAY=-1
+    username: testAdmin
+    password: testPassword
+  batch:
+    job:
+      enabled: false # disable auto batch job start

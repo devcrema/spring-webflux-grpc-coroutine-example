@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono
 
 @Repository
 class TestRepository(
-        private val testReactiveRepository: TestReactiveRepository,
-        private val testJpaRepository: TestJpaRepository
+    private val testReactiveRepository: TestReactiveRepository,
+    private val testJpaRepository: TestJpaRepository
 ){
 
     suspend fun findById(): String? = testReactiveRepository.findById().awaitFirstOrNull()
