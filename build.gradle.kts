@@ -79,8 +79,6 @@ subprojects {
         implementation("io.grpc:grpc-services:${Version.GRPC}")
         implementation("io.grpc:grpc-kotlin-stub:${Version.GRPC_KOTLIN}")
         implementation("io.github.lognet:grpc-spring-boot-starter:${Version.LOGNET_GRPC_STARTER}") //Spring Boot starter module for gRPC framework
-
-        runtimeOnly("io.grpc:grpc-netty") //없으면 grpc 포트가 열리지 않음, default 6565
         implementation("com.h2database:h2")
         protobuf(files("$rootDir/proto")) //proto 파일들이 들어있는 디렉토리를 지정
         //for test
